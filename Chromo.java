@@ -17,6 +17,23 @@ public class Chromo
 	public double rawFitness;
 	public double sclFitness;
 	public double proFitness;
+	public int pos_x;
+	public int pos_y;
+	public int finish;
+	public int start;
+	public int size;
+	public int[][] maze = {
+		{1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+		{1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		{1, 1, 0, 1, 1, 1, 1, 1, 1, 1},
+		{1, 0, 0, 0, 0, 0, 0, 1, 0, 1},
+		{1, 0, 1, 1, 1, 1, 0, 1, 0, 1},
+		{1, 0, 1, 0, 0, 1, 0, 1, 0, 1},
+		{1, 0, 1, 1, 0, 1, 0, 1, 0, 1},
+		{1, 0, 0, 1, 0, 1, 0, 0, 0, 1},
+		{1, 0, 1, 1, 0, 0, 0, 1, 0, 1},
+		{0, 0, 1, 1, 1, 1, 1, 1, 1, 1}
+};
 
 /*******************************************************************************
 *                            INSTANCE VARIABLES                                *
@@ -33,18 +50,27 @@ public class Chromo
 		//  Set gene values to a randum sequence of 1's and 0's
 		char geneBit;
 		chromo = "";
-		for (int i=0; i<Parameters.numGenes; i++){
-			for (int j=0; j<Parameters.geneSize; j++){
-				randnum = Search.r.nextDouble();
-				if (randnum > 0.5) geneBit = '0';
-				else geneBit = '1';
-				this.chromo = chromo + geneBit;
+		boolean f = true;
+		
+			for (int i=0; i<Parameters.numGenes; i++){
+				for (int j=0; j<Parameters.geneSize; j++){
+					randnum = Search.r.nextDouble();
+					if (randnum > 0.5) geneBit = '0';
+					else geneBit = '1';
+					this.chromo = chromo + geneBit;
+				}
 			}
-		}
 
 		this.rawFitness = -1;   //  Fitness not yet evaluated
 		this.sclFitness = -1;   //  Fitness not yet scaled
 		this.proFitness = -1;   //  Fitness not yet proportionalized
+		this.start = 0;
+		this.pos_x = 0;
+		this.pos_y = 0;
+		this.size = 10;
+		this.finish = 10;
+
+
 	}
 
 
@@ -59,6 +85,110 @@ public class Chromo
 		int end = (geneID+1) * Parameters.geneSize;
 		String geneAlpha = this.chromo.substring(start, end);
 		return (geneAlpha);
+	}
+	
+	public boolean move_right(){
+		int x = pos_x;
+		int y = pos_y;
+		boolean accept = false;
+		if(x+1<size){
+		if((maze[x+1][y]==1)){
+			accept = false;
+		}
+		else{
+			accept = true;
+			pos_x = pos_x +1;
+		}}
+		return accept;
+	}
+
+	public boolean move_left(){
+		int x = pos_x;
+		int y = pos_y;
+		boolean accept = false;
+		if(x-1>0){
+		if((maze[x-1][y]==1)){
+			accept = false;
+		}
+		else{
+			accept = true;
+			pos_x = pos_x-1;
+		}
+	}
+		return accept;
+		
+	}
+
+	public boolean move_up(){
+		int x = pos_x;
+		int y = pos_y;
+		boolean accept = false;
+		if(y+1<size){
+		if((maze[x][y+1]==1)){
+			accept = false;
+		}
+		else{
+			accept = true;
+			pos_y = pos_y +1;
+		}}
+		return accept;
+	}
+
+	public boolean move_down(){
+		int x = pos_x;
+		int y = pos_y;
+		boolean accept = false;
+		if(y-1>0){
+		if((maze[x][y-1]==1)){
+			accept = false;
+		}
+		else{
+			accept = true;
+			pos_y = pos_y -1;
+		}}
+		return accept;
+	}
+
+	public void trace(){
+		for(int i=0;i<Parameters.numGenes;i=i+2){
+			String gene= this.chromo.substring(i,i+1);
+			int movement = Integer.parseInt(gene,2);
+
+			switch (movement) {
+				case 0:
+					move_right();
+					break;
+				case 1:
+					move_left();
+					break;
+				case 2:
+					move_up();
+					break;
+				case 3:
+					move_down();
+					break;
+				default:
+					break;
+			}		
+		}
+
+	}
+
+
+	//validate that the chromo and genes (solution doesn't go outside the )
+	public boolean validate_gene(){
+		boolean valid=false;
+		for (int i =0; i<Parameters.geneSize;i++){
+
+		}
+		return valid;
+	}
+	public boolean validate_chromo(){
+		boolean validC=false;
+		for(int i=0; i<Parameters.numGenes;i++){
+			validC = validate_gene();
+		}
+		return validC;
 	}
 
 	//  Get Integer Value of a Gene (Positive or Negative, 2's Compliment) ****
@@ -170,7 +300,6 @@ public class Chromo
 
 			//  Select crossover point
 			xoverPoint1 = 1 + (int)(Search.r.nextDouble() * (Parameters.numGenes * Parameters.geneSize-1));
-
 			//  Create child chromosome from parental material
 			child1.chromo = parent1.chromo.substring(0,xoverPoint1) + parent2.chromo.substring(xoverPoint1);
 			child2.chromo = parent2.chromo.substring(0,xoverPoint1) + parent1.chromo.substring(xoverPoint1);
